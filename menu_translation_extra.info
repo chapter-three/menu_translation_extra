@@ -1,0 +1,8 @@
+name = Menu Translation Extra
+description = Contains a collection of adjustments and improvements to the menu links admin pages for multi-lingual sites.
+core = 7.x
+
+dependencies[] = locale
+dependencies[] = menu
+
+package = Multilingual - Internationalization
