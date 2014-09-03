@@ -28,6 +28,7 @@ function menu_translation_extra_menu_overview_form($variables) {
 
   $header = array(
     t('Menu link'),
+    t('Language'),
     array('data' => t('Enabled'), 'class' => array('checkbox')),
     t('Weight'),
     array('data' => t('Operations'), 'colspan' => '3'),
@@ -37,6 +38,10 @@ function menu_translation_extra_menu_overview_form($variables) {
   foreach (element_children($form) as $mlid) {
     if (isset($form[$mlid]['hidden'])) {
       $element = &$form[$mlid];
+
+      // Define iso language for menu item
+      $lang = $element['#item']['language'];
+
       // Build a list of operations.
       $operations = array();
       foreach (element_children($element['operations']) as $op) {
@@ -50,13 +55,23 @@ function menu_translation_extra_menu_overview_form($variables) {
       $element['plid']['#attributes']['class'] = array('menu-plid');
       $element['mlid']['#attributes']['class'] = array('menu-mlid');
       $element['weight']['#attributes']['class'] = array('menu-weight');
-      $link_language = 'lang-' . $element['#item']['language'];
+      $link_language = 'lang-' . $lang;
 
       // Change the parent field to a hidden. This allows any value but hides the field.
       $element['plid']['#type'] = 'hidden';
 
+      // Get the full name of the language of the menu item,
+      // by comparing iso code to all enabled languages.
+      // Returns an array if language is set.
+      $item_lang = array();
+      $item_lang[] = $lang;
+      $item_lang = array_flip($item_lang);
+      $language_list = locale_language_list('name');
+      $item_language = array_intersect_key($language_list, $item_lang);
+
       $row = array();
       $row[] = theme('indentation', array('size' => $element['#item']['depth'] - 1)) . drupal_render($element['title']);
+      $row[] = (($lang == 'und') || ($lang == '')) ? t('Language Neutral') : $item_language[$lang];
       $row[] = array('data' => drupal_render($element['hidden']), 'class' => array('checkbox', 'menu-enabled'));
       $row[] = drupal_render($element['weight']) . drupal_render($element['plid']) . drupal_render($element['mlid']);
       $row = array_merge($row, $operations);
@@ -97,8 +112,8 @@ function menu_translation_extra_menu_overview_form($variables) {
     $rows[] = array(array('data' => $form['#empty_text'], 'colspan' => '7'));
   }
   $output .= drupal_render($form['language_selector']);
-  $output .= drupal_render($no_menu_items_to_display);
   $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'menu-overview')));
+  $output .= drupal_render($no_menu_items_to_display);
   $output .= drupal_render_children($form);
 
   return $output;
